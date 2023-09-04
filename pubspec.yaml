@@ -1,5 +1,5 @@
 name: meteor_log
-description: App for logging visual meteor observation and generating CSV files for IMO website.
+description: App for generating CSV files of visual observations of meteors for submitting to IMO website.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
