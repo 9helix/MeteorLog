@@ -356,7 +356,7 @@ class MyCustomFormState extends State<MyCustomForm> {
         round: 0.0,
         keyboardType: TextInputType.number,
         format: [FilteringTextInputFormatter.digitsOnly],
-        scrollPadding: EdgeInsets.all(-800.0),
+        scrollPadding: EdgeInsets.all(-200.0),
         controller: meteorForm2,
         // The validator receives the text that the user has entered.
         validator: (value) {
