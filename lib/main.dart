@@ -6,6 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:csv/csv.dart';
+import 'widgets/table_cell.dart';
+import 'widgets/text_field.dart';
+import 'colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const MyApp());
 
@@ -20,10 +24,10 @@ class MyApp extends StatelessWidget {
         create: (context) => MyAppState(),
         child: MaterialApp(
             theme: ThemeData(
-              canvasColor: Color(0xff1e1e1e),
+              canvasColor: lightGrey,
               // Define the default brightness and colors.
-              scaffoldBackgroundColor: Color(0xff121212),
-              primaryColor: Color(0xff121212),
+              scaffoldBackgroundColor: darkGrey,
+              primaryColor: darkGrey,
 
               // Define the default font family.
               fontFamily: 'Open Sans',
@@ -40,9 +44,8 @@ class MyApp extends StatelessWidget {
             ),
             home: Scaffold(
                 appBar: AppBar(
-                  backgroundColor: Color(0xff121212),
-                  title: const Text(appTitle,
-                      style: TextStyle(color: Color(0xFFB71C1C))),
+                  backgroundColor: darkGrey,
+                  title: const Text(appTitle, style: TextStyle(color: red)),
                 ),
                 body: Center(
                   child: SingleChildScrollView(
@@ -89,6 +92,15 @@ class MyCustomFormState extends State<MyCustomForm> {
     final directory = await getApplicationDocumentsDirectory();
     out = directory.path;
     return out;
+  }
+
+  final Uri _url = Uri.parse(
+      'https://www.imo.net/members/imo_observation/upload_observation');
+
+  Future<void> _launchUrl() async {
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
   }
 
   bool firstWrite = true;
@@ -201,14 +213,9 @@ class MyCustomFormState extends State<MyCustomForm> {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
               '$perTime minutes have passed. Consider starting a new session.',
-              style: TextStyle(
-                  color: Color(0xFFB71C1C),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
+              style: redNormal,
             ),
-            backgroundColor: Color(
-              0xff1e1e1e,
-            ),
+            backgroundColor: lightGrey,
           ));
         }
       });
@@ -236,6 +243,10 @@ class MyCustomFormState extends State<MyCustomForm> {
   List<String> observers = [];
   List<bool> checks = [];
   String dropdownValue = '';
+  Text create(int num) {
+    return Text(num.toString(), style: redNormal);
+  }
+
   @override
   void dispose() {
     timer.cancel();
@@ -255,69 +266,23 @@ class MyCustomFormState extends State<MyCustomForm> {
     List<TableRow> tableRows = [
       TableRow(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("Obs. num",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("Obs. name",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("RA,DEC in °",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("Obstr. %",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("Triangle",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text("Num of stars",
-                style: TextStyle(
-                    color: Color(0xFFB71C1C),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-          ),
+          Cell("Obs. num"),
+          Cell("Obs. name"),
+          Cell("RA,DEC in °"),
+          Cell("Obstr. %"),
+          Cell("Triangle"),
+          Cell("Num of stars"),
         ],
       ),
     ];
 
-    List<Padding> meteor1 = [];
+    List<Widget> meteor1 = [];
     List<Widget> meteor2 = [];
     for (int i = 0; i < obsNum; i++) {
       meteor1.add(Padding(
         padding: const EdgeInsets.all(5.0),
         child: Center(
-          child: Text("${i + 1}",
-              style: TextStyle(
-                  color: Color(0xFFB71C1C),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
+          child: Text("${i + 1}", style: redNormal),
         ),
       ));
       Color getColor(Set<MaterialState> states) {
@@ -327,7 +292,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           MaterialState.focused,
         };
         if (states.any(interactiveStates.contains)) {
-          return Color(0xff1e1e1e);
+          return lightGrey;
         }
         return Color(0xff1f1f1f);
       }
@@ -335,12 +300,12 @@ class MyCustomFormState extends State<MyCustomForm> {
       meteor2.add(Center(
         child: Checkbox(
             fillColor: MaterialStateProperty.resolveWith(getColor),
-            checkColor: Color(0xFFB71C1C),
+            checkColor: red,
             value: checks[i],
             onChanged: (bool? value) {
               setState(() {
                 print(value);
-                checks[i] = value! ? obsNum != 1 : value;
+                checks[i] = value! ? obsNum != 1 : true;
                 print(checks);
               });
             }),
@@ -348,70 +313,24 @@ class MyCustomFormState extends State<MyCustomForm> {
     }
 
     meteor1.addAll([
-      Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Center(
-          child: Text("Radiant",
-              style: TextStyle(
-                  color: Color(0xFFB71C1C),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Center(
-          child: Text("Brightness (mag.)",
-              style: TextStyle(
-                  color: Color(0xFFB71C1C),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
-        ),
-      ),
+      CenteredCell("Radiant"),
+      CenteredCell("Brightness (mag.)"),
     ]);
 
     meteor2.addAll([
-      /*TextFormField(
-        controller: meteorForm1,
-        cursorColor: Color(0xFFB71C1C),
-        decoration: InputDecoration(
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-          ),
-          border: const OutlineInputBorder(),
-          labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-        ),
-        style: TextStyle(color: Color(0xFFB71C1C)),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Enter a radiant';
-          } else if (value.length != 3) {
-            return 'Exactly 3 letters';
-          } else if (!showerList.contains(value)) {
-            return 'Enter observed radiant';
-          }
-          setState(() {
-            //obsNum = int.parse(value);
-          });
-          return null;
-        },
-      ),*/
       Padding(
         padding: const EdgeInsets.all(5.0),
         child: DropdownButton<String>(
           value: dropdownValue,
           icon: const Icon(
             Icons.arrow_drop_down_outlined,
-            color: Color(0xFFB71C1C),
+            color: red,
           ),
           elevation: 16,
-          style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 16),
+          style: const TextStyle(color: red, fontSize: 16),
           underline: Container(
             height: 2,
-            color: Color(0xFFB71C1C),
+            color: red,
           ),
           onChanged: (String? value) {
             // This is called when the user selects an item.
@@ -427,21 +346,12 @@ class MyCustomFormState extends State<MyCustomForm> {
           }).toList(),
         ),
       ),
-      TextFormField(
+      TextForm(
+        round: 0.0,
+        keyboardType: TextInputType.number,
+        format: [FilteringTextInputFormatter.digitsOnly],
         scrollPadding: EdgeInsets.all(-800.0),
         controller: meteorForm2,
-        cursorColor: Color(0xFFB71C1C),
-        decoration: InputDecoration(
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-          ),
-          border: const OutlineInputBorder(),
-          labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-        ),
-        style: TextStyle(color: Color(0xFFB71C1C)),
         // The validator receives the text that the user has entered.
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -457,14 +367,6 @@ class MyCustomFormState extends State<MyCustomForm> {
       ),
     ]);
 
-    Text create(int num) {
-      return Text(num.toString(),
-          style: TextStyle(
-              color: Color(0xFFB71C1C),
-              fontSize: 16,
-              fontWeight: FontWeight.bold));
-    }
-
     for (int i = 0; i < obsNum; i++) {
       observerControllers.add(TextEditingController());
       fovControllers.add(TextEditingController());
@@ -478,22 +380,10 @@ class MyCustomFormState extends State<MyCustomForm> {
             Center(
               child: create(i + 1),
             ),
-            TextFormField(
+            TextForm(
+              round: 0.0,
               controller: observerControllers[i],
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-              ),
-              style: TextStyle(color: Color(0xFFB71C1C)),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter a name';
@@ -502,23 +392,12 @@ class MyCustomFormState extends State<MyCustomForm> {
                 }
                 return null;
               },
+              keyboardType: TextInputType.name,
             ),
-            TextFormField(
+            TextForm(
+              round: 0.0,
               controller: fovControllers[i],
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-              ),
-              style: TextStyle(color: Color(0xFFB71C1C)),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter an FOV';
@@ -532,25 +411,14 @@ class MyCustomFormState extends State<MyCustomForm> {
                 }
                 return null;
               },
+              keyboardType: TextInputType.number,
             ),
-            TextFormField(
+            TextForm(
               controller: obstructionControllers[i],
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
+              round: 0.0,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-              ),
-              style: TextStyle(color: Color(0xFFB71C1C)),
+              format: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter obstruction';
@@ -560,24 +428,12 @@ class MyCustomFormState extends State<MyCustomForm> {
                 return null;
               },
             ),
-            TextFormField(
+            TextForm(
               controller: triangleControllers[i],
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-              ),
-              style: TextStyle(color: Color(0xFFB71C1C)),
+              format: [FilteringTextInputFormatter.digitsOnly],
+              round: 0.0,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter triangle number';
@@ -587,24 +443,12 @@ class MyCustomFormState extends State<MyCustomForm> {
                 return null;
               },
             ),
-            TextFormField(
+            TextForm(
+              round: 0.0,
               controller: starControllers[i],
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-              ),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: TextStyle(color: Color(0xFFB71C1C)),
+              format: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter number of stars';
@@ -626,29 +470,12 @@ class MyCustomFormState extends State<MyCustomForm> {
             children: [
               SizedBox(
                 width: 175,
-                child: TextFormField(
+                child: TextForm(
+                  text: 'Number of observers',
                   enabled: edit,
-                  cursorColor: Color(0xFFB71C1C),
                   autofocus: true,
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                          color: Color(0xFFB71C1C), width: 2.0),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      // width: 0.0 produces a thin "hairline" border
-                      borderSide:
-                          BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                    ),
-                    border: const OutlineInputBorder(),
-                    labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-                    labelText: 'Number of observers',
-                  ),
-                  style: TextStyle(color: Color(0xFFB71C1C)),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  format: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Enter a number';
@@ -673,28 +500,11 @@ class MyCustomFormState extends State<MyCustomForm> {
               SizedBox(width: 30),
               SizedBox(
                 width: 175,
-                child: TextFormField(
+                child: TextForm(
+                  text: 'Meteor showers',
                   controller: showers,
                   enabled: edit,
-                  cursorColor: Color(0xFFB71C1C),
                   autofocus: true,
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                          color: Color(0xFFB71C1C), width: 2.0),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      // width: 0.0 produces a thin "hairline" border
-                      borderSide:
-                          BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                    ),
-                    border: const OutlineInputBorder(),
-                    labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-                    labelText: 'Meteor showers',
-                  ),
-                  style: TextStyle(color: Color(0xFFB71C1C)),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Enter observed showers';
@@ -705,32 +515,16 @@ class MyCustomFormState extends State<MyCustomForm> {
               ),
             ],
           ),
-          SizedBox(height: 15),
+          SizedBox(height: 20),
           SizedBox(
             width: 175,
-            child: TextFormField(
-              initialValue: '15',
+            child: TextForm(
+              init: '15',
               enabled: edit,
-              cursorColor: Color(0xFFB71C1C),
               autofocus: true,
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Color(0xFFB71C1C), width: 2.0),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  // width: 0.0 produces a thin "hairline" border
-                  borderSide: BorderSide(color: Color(0xFFB71C1C), width: 1.0),
-                ),
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Color(0xFFB71C1C)),
-                labelText: 'Period duration (in minutes)',
-              ),
-              style: TextStyle(color: Color(0xFFB71C1C)),
+              text: 'Period duration (in minutes)',
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              format: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Enter desired period';
@@ -744,9 +538,8 @@ class MyCustomFormState extends State<MyCustomForm> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff1e1e1e), // Background color
-                  foregroundColor:
-                      Color(0xFFB71C1C), // Text Color (Foreground color)
+                  backgroundColor: lightGrey, // Background color
+                  foregroundColor: red, // Text Color (Foreground color)
                 ),
                 onPressed: () {
                   // Validate returns true if the form is valid, or false otherwise.
@@ -770,8 +563,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 child: Visibility(
                   visible: table1,
                   child: Table(
-                    border:
-                        TableBorder.all(color: Color(0xFFB71C1C), width: 2.0),
+                    border: TableBorder.all(color: red, width: 2.0),
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: tableRows,
                   ),
@@ -785,9 +577,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                 visible: table1,
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff1e1e1e), // Background color
-                      foregroundColor:
-                          Color(0xFFB71C1C), // Text Color (Foreground color)
+                      backgroundColor: lightGrey, // Background color
+                      foregroundColor: red, // Text Color (Foreground color)
                     ),
                     onPressed: () {
                       // Validate returns true if the form is valid, or false otherwise.
@@ -847,15 +638,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 duration: Duration(seconds: 3),
-                                backgroundColor: Color(
-                                  0xff1e1e1e,
-                                ),
+                                backgroundColor: lightGrey,
                                 content: Text(
                                   'Session started!',
-                                  style: TextStyle(
-                                      color: Color(0xFFB71C1C),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                  style: redNormal,
                                 )),
                           );
                         } else {
@@ -982,19 +768,18 @@ class MyCustomFormState extends State<MyCustomForm> {
                             ];
                           }
                           session = {};
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             duration: Duration(seconds: 3),
                             content: Text(
                               'Session ended!',
-                              style: TextStyle(
-                                  color: Color(0xFFB71C1C),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                              style: redNormal,
                             ),
-                            backgroundColor: Color(
-                              0xff1e1e1e,
+                            action: SnackBarAction(
+                              label: 'PUBLISH',
+                              textColor: red,
+                              onPressed: _launchUrl,
                             ),
+                            backgroundColor: lightGrey,
                           ));
                         }
                       }
@@ -1008,10 +793,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 visible: table2,
                 child: Text(
                   formatElapsedTime(elapsedTimeInSeconds),
-                  style: TextStyle(
-                      color: Color(0xFFB71C1C),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                  style: redNormal,
                 ),
               )
             ],
@@ -1024,8 +806,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Table(
-                    border:
-                        TableBorder.all(color: Color(0xFFB71C1C), width: 2.0),
+                    border: TableBorder.all(color: red, width: 2.0),
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: [
                       TableRow(children: meteor1),
@@ -1039,9 +820,8 @@ class MyCustomFormState extends State<MyCustomForm> {
             visible: table2,
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff1e1e1e), // Background color
-                  foregroundColor:
-                      Color(0xFFB71C1C), // Text Color (Foreground color)
+                  backgroundColor: lightGrey,
+                  foregroundColor: red,
                 ),
                 onPressed: () {
                   // Validate returns true if the form is valid, or false otherwise.
@@ -1069,32 +849,22 @@ class MyCustomFormState extends State<MyCustomForm> {
                       dropdownValue = showerList.first;
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          duration: const Duration(seconds: 3),
-                          backgroundColor: Color(
-                            0xff1e1e1e,
-                          ),
+                      const SnackBar(
+                          duration: Duration(seconds: 3),
+                          backgroundColor: lightGrey,
                           content: Text(
                             "Submitted!",
-                            style: TextStyle(
-                                color: Color(0xFFB71C1C),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                            style: redNormal,
                           )),
                     );
                   } else if (checks.every((element) => element == false)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                           duration: const Duration(seconds: 3),
-                          backgroundColor: Color(
-                            0xff1e1e1e,
-                          ),
+                          backgroundColor: lightGrey,
                           content: Text(
                             "Check at least one observer",
-                            style: TextStyle(
-                                color: Color(0xFFB71C1C),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                            style: redNormal,
                           )),
                     );
                   }
