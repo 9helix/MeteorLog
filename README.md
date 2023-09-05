@@ -1,16 +1,5 @@
-# test_app
+# <img src="https://cdn-icons-png.flaticon.com/512/1734/1734190.png" alt="meteors" width="25"> MeteorLog
 
-A new Flutter project.
+App for generating CSV files of visual observations of meteors for submitting to IMO website. Written in Flutter.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

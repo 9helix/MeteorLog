@@ -305,7 +305,13 @@ class MyCustomFormState extends State<MyCustomForm> {
             onChanged: (bool? value) {
               setState(() {
                 print(value);
-                checks[i] = value! ? obsNum != 1 : true;
+                if (obsNum == 1) {
+                  checks[i] = true;
+                } else if (!value!) {
+                  checks[i] = false;
+                } else {
+                  checks[i] = true;
+                }
                 print(checks);
               });
             }),
@@ -381,6 +387,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               child: create(i + 1),
             ),
             TextForm(
+              scrollPadding: EdgeInsets.all(-150.0),
               round: 0.0,
               controller: observerControllers[i],
               enabled: edit,
@@ -395,6 +402,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               keyboardType: TextInputType.name,
             ),
             TextForm(
+              scrollPadding: EdgeInsets.all(-150.0),
               round: 0.0,
               controller: fovControllers[i],
               enabled: edit,
@@ -414,6 +422,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               keyboardType: TextInputType.number,
             ),
             TextForm(
+              scrollPadding: EdgeInsets.all(-150.0),
               controller: obstructionControllers[i],
               enabled: edit,
               round: 0.0,
@@ -429,6 +438,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               },
             ),
             TextForm(
+              scrollPadding: EdgeInsets.all(-150.0),
               controller: triangleControllers[i],
               enabled: edit,
               keyboardType: TextInputType.number,
@@ -444,6 +454,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               },
             ),
             TextForm(
+              scrollPadding: EdgeInsets.all(-150.0),
               round: 0.0,
               controller: starControllers[i],
               enabled: edit,
@@ -549,6 +560,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                       table1 = true;
                     });
                     print(showerList);
+                    FocusManager.instance.primaryFocus?.unfocus();
                   }
                 },
                 child: const Text(
@@ -563,7 +575,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 child: Visibility(
                   visible: table1,
                   child: Table(
-                    border: TableBorder.all(color: red, width: 2.0),
+                    border: TableBorder.all(color: red, width: 1.5),
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: tableRows,
                   ),
@@ -806,7 +818,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Table(
-                    border: TableBorder.all(color: red, width: 2.0),
+                    border: TableBorder.all(color: red, width: 1.5),
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: [
                       TableRow(children: meteor1),
