@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,6 +9,7 @@ import 'widgets/table_cell.dart';
 import 'widgets/text_field.dart';
 import 'colors.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:xml/xml.dart';
 
 void main() => runApp(const MyApp());
 
@@ -20,47 +20,128 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const appTitle = 'MeteorLog';
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    return ChangeNotifierProvider(
-        create: (context) => MyAppState(),
-        child: MaterialApp(
-            theme: ThemeData(
-              canvasColor: lightGrey,
-              // Define the default brightness and colors.
-              scaffoldBackgroundColor: darkGrey,
-              primaryColor: darkGrey,
+    return MaterialApp(
+        theme: ThemeData(
+          splashColor: Color(0xff151515),
+          highlightColor: darkGrey,
+          canvasColor: lightGrey,
+          // Define the default brightness and colors.
+          scaffoldBackgroundColor: darkGrey,
+          primaryColor: darkGrey,
 
-              // Define the default font family.
-              fontFamily: 'Open Sans',
+          // Define the default font family.
+          fontFamily: 'Open Sans',
 
-              // Define the default `TextTheme`. Use this to specify the default
-              // text styling for headlines, titles, bodies of text, and more.
-              textTheme: const TextTheme(
-                displayLarge:
-                    TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
-                titleLarge:
-                    TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-                bodyMedium: TextStyle(fontSize: 14, fontFamily: 'Open Sans'),
-              ),
+          // Define the default `TextTheme`. Use this to specify the default
+          // text styling for headlines, titles, bodies of text, and more.
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
+            titleLarge: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+            bodyMedium: TextStyle(fontSize: 14, fontFamily: 'Open Sans'),
+          ),
+        ),
+        home: Scaffold(
+            appBar: AppBar(
+              backgroundColor: darkGrey,
+              title: const Text(appTitle, style: TextStyle(color: red)),
             ),
-            home: Scaffold(
-                appBar: AppBar(
-                  backgroundColor: darkGrey,
-                  title: const Text(appTitle, style: TextStyle(color: red)),
+            body: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [const MyCustomForm()],
                 ),
-                body: Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [const MyCustomForm()],
-                    ),
-                  ),
-                ))));
+              ),
+            )));
   }
 }
 
-class MyAppState extends ChangeNotifier {
-  void getNext(val) {
-    notifyListeners();
+// Multi Select widget
+// This widget is reusable
+class MultiSelect extends StatefulWidget {
+  final List<String> items;
+  const MultiSelect({Key? key, required this.items}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MultiSelectState();
+}
+
+// meteor shower popup
+class _MultiSelectState extends State<MultiSelect> {
+  // this variable holds the selected items
+  final List<String> _selectedItems = MyCustomFormState._selectedShowers;
+
+// This function is triggered when a checkbox is checked or unchecked
+  void _itemChange(String itemValue, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedItems.add(itemValue);
+      } else {
+        _selectedItems.remove(itemValue);
+      }
+    });
+  }
+
+  // this function is called when the Cancel button is pressed
+  void _cancel() {
+    Navigator.pop(context);
+  }
+
+// this function is called when the Submit button is tapped
+  void _submit() {
+    if (_selectedItems.contains("SPO")) {
+      _selectedItems.remove("SPO");
+      _selectedItems.add("SPO");
+    }
+
+    Navigator.pop(context, _selectedItems);
+    //print(MyCustomFormState._selectedShowers);
+  }
+
+  final MyCustomFormState main = MyCustomFormState();
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      actionsPadding: const EdgeInsets.fromLTRB(0, 0, 20, 20),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20))),
+      backgroundColor: darkGrey,
+      title: const Text(
+        'Select Meteor Showers',
+        style: redNormal,
+      ),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: widget.items
+              .map((item) => CheckboxListTile(
+                    fillColor: MaterialStateProperty.resolveWith(main.getColor),
+                    checkColor: red,
+                    value: _selectedItems.contains(item),
+                    title: Text(item, style: redNormal),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    onChanged: (isChecked) => _itemChange(item, isChecked!),
+                  ))
+              .toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: red, // foreground
+          ),
+          onPressed: _cancel,
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: midGrey, // Background color
+            foregroundColor: red, // Text Color (Foreground color)
+          ),
+          onPressed: _submit,
+          child: const Text('Submit'),
+        ),
+      ],
+    );
   }
 }
 
@@ -82,8 +163,9 @@ class MyCustomFormState extends State<MyCustomForm> {
   //
   // Note: This is a GlobalKey<FormState>,
   // not a GlobalKey<MyCustomFormState>.
-  Future<String> read(int index) async {
-    String text = await rootBundle.loadString('data/t$index.csv');
+
+  Future<String> readShowers() async {
+    String text = await rootBundle.loadString('data/meteor_showers.xml');
     return text;
   }
 
@@ -94,6 +176,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     return out;
   }
 
+//Observation upload link
   final Uri _url = Uri.parse(
       'https://www.imo.net/members/imo_observation/upload_observation');
 
@@ -103,23 +186,83 @@ class MyCustomFormState extends State<MyCustomForm> {
     }
   }
 
+  static const Duration showerDeviation = Duration(days: 15);
+  List<String> currentShowers = [];
+  Future<void> getShowers() async {
+    Map<String, List<String>> showerMap = {};
+    DateTime currentDate = DateTime.now();
+    int currentYear = DateTime.now().year;
+    //String formattedDate = DateFormat('MMM dd').format(currentDate);
+    String xmlData = await readShowers();
+    final document = XmlDocument.parse(xmlData);
+    final showers = document.findAllElements('shower');
+
+    for (final shower in showers) {
+      final iauCode = shower.findElements('IAU_code').first.innerText;
+      final showerStart = shower.findElements('start').first.innerText;
+      final showerEnd = shower.findElements('end').first.innerText;
+      DateTime startDate = DateFormat('MMM dd').parse(showerStart);
+
+      DateTime endDate = DateFormat('MMM dd').parse(showerEnd);
+      if (startDate.isAfter(endDate)) {
+        endDate = DateTime(currentYear + 1, endDate.month, endDate.day);
+      } else {
+        endDate = DateTime(currentYear, endDate.month, endDate.day);
+      }
+      startDate = DateTime(currentYear, startDate.month, startDate.day);
+      if (currentDate.isAfter(startDate.subtract(showerDeviation)) &&
+          currentDate.isBefore(endDate.add(showerDeviation))) {
+        showerMap[iauCode] = [showerStart, showerEnd];
+      }
+    }
+    currentShowers = showerMap.keys.toList();
+    currentShowers.add("SPO");
+  }
+
+  static List<String> _selectedShowers = ["SPO"];
+  void _showMultiSelect() async {
+    // a list of selectable items
+    // these items can be hard-coded or dynamically fetched from a database/API
+    //final List<String> showers = await getShowers();
+    final List<String>? results = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return MultiSelect(items: currentShowers);
+      },
+    );
+
+    // Update UI
+    if (results != null) {
+      setState(() {
+        _selectedShowers = results;
+      });
+    }
+  }
+
   bool firstWrite = true;
   int perTime = 15;
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   final _formKey3 = GlobalKey<FormState>();
 
-  //final meteorForm1 = TextEditingController();
-  final meteorForm2 = TextEditingController();
-  final showers = TextEditingController(text: 'SPO,');
+//form controllers
+  final meteorForm = TextEditingController();
   List<TextEditingController> observerControllers = [];
   List<TextEditingController> fovControllers = [];
   List<TextEditingController> obstructionControllers = [];
   List<TextEditingController> triangleControllers = [];
   List<TextEditingController> starControllers = [];
+
   bool readCsv = true;
   int mag = 0;
   late Map<int, Map<int, double>> fields = {};
+
+//chart reading
+  Future<String> read(int index) async {
+    String text = await rootBundle.loadString('data/t$index.csv');
+    return text;
+  }
+
   Future<void> readCharts() async {
     readCsv = false;
     for (int i = 0; i < 3; i++) {
@@ -205,8 +348,9 @@ class MyCustomFormState extends State<MyCustomForm> {
   late double limMag;
   late String observerName;
 
+  //timer functions
   void startTimer() {
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         elapsedTimeInSeconds++;
         if (elapsedTimeInSeconds % (perTime * 60) == 0) {
@@ -239,19 +383,36 @@ class MyCustomFormState extends State<MyCustomForm> {
         0, 0, 0, 0, duration.inMinutes, duration.inSeconds.remainder(60)));
   }
 
+  static const Duration snackbarDuration = Duration(seconds: 3);
+
+  //checkbox styling
+  Color getColor(Set<MaterialState> states) {
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.pressed,
+      MaterialState.hovered,
+      MaterialState.focused,
+    };
+    if (states.any(interactiveStates.contains)) {
+      return lightGrey;
+    }
+    return Color(0xff1f1f1f);
+  }
+
   List<String> showerList = [];
   List<String> observers = [];
   List<bool> checks = [];
   String dropdownValue = '';
+
+  //generating observer numbers
   Text create(int num) {
     return Text(num.toString(), style: redNormal);
   }
 
+  String filename = "";
   @override
   void dispose() {
     timer.cancel();
-    meteorForm2.dispose();
-    showers.dispose();
+    meteorForm.dispose();
     super.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: SystemUiOverlay.values); // to re-show bars
@@ -261,6 +422,7 @@ class MyCustomFormState extends State<MyCustomForm> {
   Widget build(BuildContext context) {
     if (readCsv) {
       readCharts();
+      getShowers();
     }
 
     List<TableRow> tableRows = [
@@ -285,17 +447,6 @@ class MyCustomFormState extends State<MyCustomForm> {
           child: Text("${i + 1}", style: redNormal),
         ),
       ));
-      Color getColor(Set<MaterialState> states) {
-        const Set<MaterialState> interactiveStates = <MaterialState>{
-          MaterialState.pressed,
-          MaterialState.hovered,
-          MaterialState.focused,
-        };
-        if (states.any(interactiveStates.contains)) {
-          return lightGrey;
-        }
-        return Color(0xff1f1f1f);
-      }
 
       meteor2.add(Center(
         child: Checkbox(
@@ -304,7 +455,7 @@ class MyCustomFormState extends State<MyCustomForm> {
             value: checks[i],
             onChanged: (bool? value) {
               setState(() {
-                print(value);
+                //print(value);
                 if (obsNum == 1) {
                   checks[i] = true;
                 } else if (!value!) {
@@ -312,7 +463,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 } else {
                   checks[i] = true;
                 }
-                print(checks);
+                //print(checks);
               });
             }),
       ));
@@ -354,10 +505,11 @@ class MyCustomFormState extends State<MyCustomForm> {
       ),
       TextForm(
         round: 0.0,
-        keyboardType: TextInputType.number,
-        format: [FilteringTextInputFormatter.digitsOnly],
+        keyboardType:
+            TextInputType.numberWithOptions(signed: true, decimal: true),
+        //format: [FilteringTextInputFormatter.digitsOnly],
         scrollPadding: EdgeInsets.all(-200.0),
-        controller: meteorForm2,
+        controller: meteorForm,
         // The validator receives the text that the user has entered.
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -402,7 +554,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               keyboardType: TextInputType.name,
             ),
             TextForm(
-              scrollPadding: EdgeInsets.all(-150.0),
+              scrollPadding: const EdgeInsets.all(-150.0),
               round: 0.0,
               controller: fovControllers[i],
               enabled: edit,
@@ -411,15 +563,17 @@ class MyCustomFormState extends State<MyCustomForm> {
                   return 'Enter an FOV';
                 } else if (value.split(',').length != 2) {
                   return 'Follow input rules';
-                } else if (int.parse(value.split(',')[0]) > 360 ||
-                    int.parse(value.split(',')[0]) < 0 ||
-                    int.parse(value.split(',')[1]) > 90 ||
-                    int.parse(value.split(',')[0]) < -90) {
+                } else if (double.tryParse(value.split(',')[0]) != null &&
+                        double.tryParse(value.split(',')[1]) != null &&
+                        double.parse(value.split(',')[0]) > 360 ||
+                    double.parse(value.split(',')[0]) < 0 ||
+                    double.parse(value.split(',')[1]) > 90 ||
+                    double.parse(value.split(',')[1]) < -90) {
                   return 'Enter valid coordinates';
                 }
                 return null;
               },
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
             ),
             TextForm(
               scrollPadding: EdgeInsets.all(-150.0),
@@ -484,7 +638,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 child: TextForm(
                   text: 'Number of observers',
                   enabled: edit,
-                  autofocus: true,
+                  autofocus: false,
                   keyboardType: TextInputType.number,
                   format: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
@@ -508,42 +662,52 @@ class MyCustomFormState extends State<MyCustomForm> {
                   },
                 ),
               ),
-              SizedBox(width: 30),
+              const SizedBox(width: 30),
               SizedBox(
                 width: 175,
                 child: TextForm(
-                  text: 'Meteor showers',
-                  controller: showers,
+                  init: '15',
                   enabled: edit,
-                  autofocus: true,
+                  autofocus: false,
+                  text: 'Period duration (in minutes)',
+                  keyboardType: TextInputType.number,
+                  format: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Enter observed showers';
+                      return 'Enter desired period';
                     }
+                    perTime = int.parse(value);
                     return null;
                   },
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20),
-          SizedBox(
-            width: 175,
-            child: TextForm(
-              init: '15',
-              enabled: edit,
-              autofocus: true,
-              text: 'Period duration (in minutes)',
-              keyboardType: TextInputType.number,
-              format: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Enter desired period';
-                }
-                perTime = int.parse(value);
-                return null;
-              },
-            ),
+          const SizedBox(height: 20),
+          Column(
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: lightGrey, // Background color
+                  foregroundColor: red, // Text Color (Foreground color)
+                ),
+                onPressed: _showMultiSelect,
+                child: const Text('Meteor Showers'),
+              ),
+              Wrap(
+                direction: Axis.horizontal,
+                spacing: 4,
+                children: _selectedShowers
+                    .map((e) => Chip(
+                          backgroundColor: lightGrey,
+                          label: Text(
+                            e,
+                            style: const TextStyle(color: red),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -553,13 +717,24 @@ class MyCustomFormState extends State<MyCustomForm> {
                   foregroundColor: red, // Text Color (Foreground color)
                 ),
                 onPressed: () {
+                  if (_selectedShowers.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          duration: snackbarDuration,
+                          backgroundColor: lightGrey,
+                          content: Text(
+                            "Select at least one meteor shower",
+                            style: redNormal,
+                          )),
+                    );
+                  }
                   // Validate returns true if the form is valid, or false otherwise.
-                  if (_formKey.currentState!.validate()) {
+                  else if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     setState(() {
                       table1 = true;
                     });
-                    print(showerList);
+                    //print(showerList);
                     FocusManager.instance.primaryFocus?.unfocus();
                   }
                 },
@@ -598,13 +773,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                         _formKey2.currentState!.save();
                         if (sessionButton == "Start session") {
                           sessionButton = "End session";
-                          String showerTxt = showers.text.trim();
-                          if (showerTxt.substring(showers.text.length - 1) ==
-                              ',') {
-                            showerTxt =
-                                showerTxt.substring(0, showerTxt.length - 1);
-                          }
-                          showerList = showerTxt.split(',');
+                          showerList = _selectedShowers;
                           dropdownValue = showerList.first;
                           if (firstWrite) {
                             for (int i = 0; i < showerList.length; i++) {
@@ -649,7 +818,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                duration: Duration(seconds: 3),
+                                duration: snackbarDuration,
                                 backgroundColor: lightGrey,
                                 content: Text(
                                   'Session started!',
@@ -671,14 +840,17 @@ class MyCustomFormState extends State<MyCustomForm> {
                           Duration difference = now.difference(startNow);
                           double teff = difference.inMinutes / 60.0;
                           String month = DateFormat('MM').format(startNow);
+                          String month2 = DateFormat('MMM').format(startNow);
                           String day = DateFormat('dd').format(startNow);
                           String year = DateFormat('yyyy').format(startNow);
-                          date = "$month $day $year";
+                          date = "$month2 $day $year";
                           hours = DateFormat('HH').format(startNow);
                           minutes = DateFormat('mm').format(startNow);
-                          String filename =
-                              year + month + day + hours + minutes;
+                          if (firstWrite) {
+                            filename = year + month + day + hours + minutes;
+                          }
                           for (final observer in observers) {
+                            print(observers);
                             List<String> sessionData = [
                               date,
                               startTime,
@@ -689,12 +861,15 @@ class MyCustomFormState extends State<MyCustomForm> {
                               obstr.toString(),
                               limMag.toString(),
                             ];
+
                             for (final shower in showerList) {
                               sessionData.add('C');
                               int counter = 0;
                               if (session[observer]![shower] == null) {
-                                session[observer]![shower] = [];
+                                session[observer]![shower] =
+                                    List<int>.generate(14, (int index) => 0);
                               }
+                              // number of spotted meteors per shower
                               for (final num in session[observer]![shower]!) {
                                 counter += num;
                               }
@@ -721,29 +896,39 @@ class MyCustomFormState extends State<MyCustomForm> {
                                 const ListToCsvConverter().convert(csvData);
                             String csv2 =
                                 const ListToCsvConverter().convert(csvData2);
+                            print(csv);
+                            print(csv2);
                             Future<File> writeCounter(
-                                String csv, String observer, int a) async {
-                              String path = await dir();
-                              path = "/storage/emulated/0/Download/";
+                                String observer, int a) async {
+                              //String path = await dir();
+                              String path =
+                                  "/storage/emulated/0/Download/MeteorLog";
+                              final myDir = Directory(path);
+                              var isThere = await myDir.exists();
+                              if (!isThere) {
+                                await myDir.create(recursive: true);
+                                //print('Directory created');
+                              }
+
                               if (a == 1) {
+                                //print("first batch: $csvData");
                                 File f = File(
                                     "$path/${filename}_${observer}_count.csv");
-                                print(
-                                    "$path/${filename}_${observer}_count.csv");
-                                return f.writeAsString(csv,
-                                    mode: FileMode.append);
+                                return f.writeAsString(csv);
+                                //mode: FileMode.append);
                               } else {
+                                //print("second batch: $csvData2");
                                 File f = File(
                                     "$path/${filename}_${observer}_mag.csv");
-                                return f.writeAsString(csv2,
-                                    mode: FileMode.append);
+                                return f.writeAsString(csv2);
+                                //mode: FileMode.append);
                               }
                             }
 
-                            writeCounter(csv, observer, 1);
-                            writeCounter(csv, observer, 2);
+                            writeCounter(observer, 1);
+                            writeCounter(observer, 2);
                           }
-                          if (firstWrite) {
+                          /*if (firstWrite) {
                             csvData = [
                               [
                                 "DATE UT",
@@ -778,11 +963,15 @@ class MyCustomFormState extends State<MyCustomForm> {
                                 "7"
                               ]
                             ];
-                          }
+                          }*/
+                          //csvData = [];
+                          //csvData2 = [];
+                          observers = [];
+                          firstWrite = false;
                           session = {};
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            duration: Duration(seconds: 3),
-                            content: Text(
+                            duration: const Duration(seconds: 5),
+                            content: const Text(
                               'Session ended!',
                               style: redNormal,
                             ),
@@ -800,7 +989,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                       sessionButton,
                     )),
               ),
-              SizedBox(width: 30),
+              const SizedBox(width: 20),
               Visibility(
                 visible: table2,
                 child: Text(
@@ -810,7 +999,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               )
             ],
           ),
-          SizedBox(height: 35),
+          const SizedBox(height: 35),
           Visibility(
               visible: table2,
               child: Form(
@@ -827,7 +1016,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   ),
                 ),
               )),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Visibility(
             visible: table2,
             child: ElevatedButton(
@@ -849,20 +1038,20 @@ class MyCustomFormState extends State<MyCustomForm> {
                             ?.putIfAbsent(radiant, () => emptyMags);
 
                         session[observers[i]]?[radiant]
-                            ?[int.parse(meteorForm2.text) + 6] += 1;
+                            ?[int.parse(meteorForm.text) + 6] += 1;
                       }
                     }
                     if (obsNum != 1) {
                       checks.fillRange(0, checks.length, false);
                     }
 
-                    meteorForm2.clear();
-                    if (showerList.length != 1) {
+                    meteorForm.clear();
+                    /*if (showerList.length != 1) {
                       dropdownValue = showerList.first;
-                    }
+                    }*/
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          duration: Duration(seconds: 3),
+                          duration: snackbarDuration,
                           backgroundColor: lightGrey,
                           content: Text(
                             "Submitted!",
@@ -871,8 +1060,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                     );
                   } else if (checks.every((element) => element == false)) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          duration: const Duration(seconds: 3),
+                      const SnackBar(
+                          duration: snackbarDuration,
                           backgroundColor: lightGrey,
                           content: Text(
                             "Check at least one observer",
@@ -881,11 +1070,11 @@ class MyCustomFormState extends State<MyCustomForm> {
                     );
                   }
                 },
-                child: Text(
+                child: const Text(
                   "Submit",
                 )),
           ),
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
         ],
       ),
     );
