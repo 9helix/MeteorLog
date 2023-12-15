@@ -432,7 +432,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           Cell("Obs. name"),
           Cell("RA,DEC in °"),
           Cell("Obstr. %"),
-          Cell("Triangle"),
+          Cell("Field num"),
           Cell("Num of stars"),
         ],
       ),
