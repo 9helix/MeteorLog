@@ -114,7 +114,7 @@ class _MultiSelectState extends State<MultiSelect> {
         child: ListBody(
           children: widget.items
               .map((item) => CheckboxListTile(
-                    fillColor: MaterialStateProperty.resolveWith(main.getColor),
+                    fillColor: WidgetStateProperty.resolveWith(main.getColor),
                     checkColor: red,
                     value: _selectedItems.contains(item),
                     title: Text(item, style: redNormal),
@@ -386,11 +386,11 @@ class MyCustomFormState extends State<MyCustomForm> {
   static const Duration snackbarDuration = Duration(seconds: 3);
 
   //checkbox styling
-  Color getColor(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{
-      MaterialState.pressed,
-      MaterialState.hovered,
-      MaterialState.focused,
+  Color getColor(Set<WidgetState> states) {
+    const Set<WidgetState> interactiveStates = <WidgetState>{
+      WidgetState.pressed,
+      WidgetState.hovered,
+      WidgetState.focused,
     };
     if (states.any(interactiveStates.contains)) {
       return lightGrey;
@@ -450,7 +450,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 
       meteor2.add(Center(
         child: Checkbox(
-            fillColor: MaterialStateProperty.resolveWith(getColor),
+            fillColor: WidgetStateProperty.resolveWith(getColor),
             checkColor: red,
             value: checks[i],
             onChanged: (bool? value) {
@@ -630,58 +630,56 @@ class MyCustomFormState extends State<MyCustomForm> {
       key: _formKey,
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 175,
-                child: TextForm(
-                  text: 'Number of observers',
-                  enabled: edit,
-                  autofocus: false,
-                  keyboardType: TextInputType.number,
-                  format: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Enter a number';
-                    } else if (int.parse(value) > 5 || int.parse(value) < 1) {
-                      return '1-5 observers allowed';
+          SizedBox(
+            height: 10,
+          ),
+          SizedBox(
+            width: 200,
+            child: TextForm(
+              text: 'Number of observers',
+              enabled: edit,
+              autofocus: false,
+              keyboardType: TextInputType.number,
+              format: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Enter a number';
+                } else if (int.parse(value) > 5 || int.parse(value) < 1) {
+                  return '1-5 observers allowed';
+                }
+                setState(() {
+                  obsNum = int.parse(value);
+                  checks = [];
+                  for (int i = 0; i < obsNum; i++) {
+                    if (obsNum == 1) {
+                      checks.add(true);
+                    } else {
+                      checks.add(false);
                     }
-                    setState(() {
-                      obsNum = int.parse(value);
-                      checks = [];
-                      for (int i = 0; i < obsNum; i++) {
-                        if (obsNum == 1) {
-                          checks.add(true);
-                        } else {
-                          checks.add(false);
-                        }
-                      }
-                    });
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 30),
-              SizedBox(
-                width: 175,
-                child: TextForm(
-                  init: '15',
-                  enabled: edit,
-                  autofocus: false,
-                  text: 'Period duration (in minutes)',
-                  keyboardType: TextInputType.number,
-                  format: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Enter desired period';
-                    }
-                    perTime = int.parse(value);
-                    return null;
-                  },
-                ),
-              ),
-            ],
+                  }
+                });
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(height: 30),
+          SizedBox(
+            width: 200,
+            child: TextForm(
+              init: '15',
+              enabled: edit,
+              autofocus: false,
+              text: 'Period duration (in minutes)',
+              keyboardType: TextInputType.number,
+              format: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Enter desired period';
+                }
+                perTime = int.parse(value);
+                return null;
+              },
+            ),
           ),
           const SizedBox(height: 20),
           Column(
