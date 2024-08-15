@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+ <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:label="MeteorLog"
         android:name="${applicationName}"
@@ -31,4 +33,5 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+
 </manifest>
