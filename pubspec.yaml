@@ -21,7 +21,7 @@ dependencies:
   url_launcher: ^6.1.14
   rename: ^2.1.1
   xml: ^6.3.0
-  vibration: ^1.9.0
+  vibration: ^3.1.3
 
 dev_dependencies:
   flutter_test:
@@ -37,5 +37,5 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "D:/Preuzimanja/Icons/PNG/meteor.png"
+  image_path: "/home/helix/Downloads/meteor.png"
   min_sdk_android: 21 # android min sdk min:16, default 21

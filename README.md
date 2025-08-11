@@ -14,3 +14,5 @@ Android app for generating CSV files from visual observations of meteors for sub
 After the session is ended, you can start a new one by pressing "Start session" button again. Until the app is fully closed, data from all of the ended sessions will be saved in the same files created at the end of the first session.
 
 <img src="app_screenshot.jpg" alt="screenshot" width="500">
+
+App icon credit: <a href="https://www.flaticon.com/free-icons/meteor" title="meteor icons">Meteor icons created by Freepik - Flaticon</a>

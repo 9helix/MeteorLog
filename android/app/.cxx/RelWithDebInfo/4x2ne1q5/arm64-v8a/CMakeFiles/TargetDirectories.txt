@@ -1,0 +1,2 @@
+/mnt/1tb/Informatika/Flutter/meteorlog/android/app/.cxx/RelWithDebInfo/4x2ne1q5/arm64-v8a/CMakeFiles/edit_cache.dir
+/mnt/1tb/Informatika/Flutter/meteorlog/android/app/.cxx/RelWithDebInfo/4x2ne1q5/arm64-v8a/CMakeFiles/rebuild_cache.dir
