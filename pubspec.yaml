@@ -3,7 +3,7 @@ description: App for generating CSV files of visual observations of meteors for 
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 0.3.0
+version: 0.4.0
 
 environment:
   sdk: '>=2.19.4 <4.0.0'
