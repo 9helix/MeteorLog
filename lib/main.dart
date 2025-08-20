@@ -1,3 +1,5 @@
+import 'package:meteor_log/widgets/url_button.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'stars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +12,6 @@ import 'package:csv/csv.dart';
 import 'widgets/table_cell.dart';
 import 'widgets/text_field.dart';
 import 'colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:xml/xml.dart';
 import 'package:vibration/vibration.dart';
 import 'coordinates.dart';
@@ -41,13 +42,15 @@ class MyApp extends StatelessWidget {
           textTheme: const TextTheme(
             displayLarge: TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
             titleLarge: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
-            bodyMedium: TextStyle(fontSize: 14, fontFamily: 'Open Sans'),
+            bodyMedium:
+                TextStyle(fontSize: 14, fontFamily: 'Open Sans', color: red),
           ),
         ),
         home: Scaffold(
             appBar: AppBar(
               backgroundColor: darkGrey,
               title: const Text(appTitle, style: TextStyle(color: red)),
+              actions: [UrlButton()],
             ),
             body: Center(
               child: SingleChildScrollView(
@@ -178,16 +181,6 @@ class MyCustomFormState extends State<MyCustomForm> {
     final directory = await getApplicationDocumentsDirectory();
     out = directory.path;
     return out;
-  }
-
-//Observation upload link
-  final Uri _url = Uri.parse(
-      'https://www.imo.net/members/imo_observation/upload_observation');
-
-  Future<void> _launchUrl() async {
-    if (!await launchUrl(_url)) {
-      throw Exception('Could not launch $_url');
-    }
   }
 
   static const Duration showerDeviation = Duration(days: 15);
@@ -403,6 +396,9 @@ class MyCustomFormState extends State<MyCustomForm> {
       getShowers();
     }
 
+    List<FovStars> sortedFovStars = List.from(FovStars.values);
+    sortedFovStars.sort((a, b) => a.star.compareTo(b.star));
+
     List<TableRow> tableRows = [
       TableRow(
         children: <Widget>[
@@ -410,7 +406,8 @@ class MyCustomFormState extends State<MyCustomForm> {
           Cell("Obs. name"),
           Cell("Center star"),
           Cell("Obstr. %"),
-          Cell("Field num"),
+          LinkCell("Field num",
+              "https://www.imo.net/observations/methods/visual-observation/major/observation/"),
           Cell("Star num"),
         ],
       ),
@@ -476,7 +473,7 @@ class MyCustomFormState extends State<MyCustomForm> {
             value: value,
             child: Text(
               value,
-              style: TextStyle(color: red, fontSize: 16),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           );
         }).toList(),
@@ -528,61 +525,78 @@ class MyCustomFormState extends State<MyCustomForm> {
               },
               keyboardType: TextInputType.name,
             ),
-            DropdownMenu<Coordinates>(
-              textAlign: TextAlign.end,
-              expandedInsets: EdgeInsets.zero,
-              menuStyle: MenuStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(darkGrey),
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                outlineBorder: BorderSide(color: red, width: 0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: red, width: 0),
-                  borderRadius: BorderRadius.circular(0.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: red, width: 0),
-                  borderRadius: BorderRadius.circular(0.0),
-                ),
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
-              ],
-              onSelected: (Coordinates? newValue) {
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text == '') {
+                  return const Iterable<String>.empty();
+                }
+                return FovStars.toMap().keys.where((String option) {
+                  return option
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase());
+                });
+              },
+              fieldViewBuilder:
+                  (context, controller, focusNode, onEditingComplete) {
+                return TextField(
+                  cursorColor: red,
+                  controller: controller,
+                  focusNode: focusNode,
+                  onEditingComplete: onEditingComplete,
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: red, width: 1.0),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: red, width: 0.0),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    border: OutlineInputBorder(),
+                    hintText: 'Search stars...',
+                    hintStyle: Theme.of(context).textTheme.bodyMedium,
+                    //prefixIcon: Icon(Icons.search),
+                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4.0,
+                    child: Container(
+                      width: 150, // Adjust width as needed
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final option = options.elementAt(index);
+                          return ListTile(
+                            title: Text(
+                              option,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            onTap: () => onSelected(option),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+              onSelected: (String selection) {
                 setState(() {
                   if (i >= fovCoords.length) {
                     for (int j = fovCoords.length; j <= i; j++) {
                       fovCoords.add(null);
                     }
                   }
-                  fovCoords[i] = newValue;
+                  fovCoords[i] = FovStars.toMap()[selection];
                 });
               },
-              trailingIcon: const Icon(
-                Icons.arrow_drop_down_outlined,
-                color: red,
-              ),
-              selectedTrailingIcon: const Icon(
-                Icons.arrow_drop_up_outlined,
-                color: red,
-              ),
-              textStyle: const TextStyle(color: red, fontSize: 14),
-              requestFocusOnTap: true,
-              enabled: edit,
-              enableSearch: true,
-              enableFilter: true,
-              dropdownMenuEntries:
-                  FovStars.values.map<DropdownMenuEntry<Coordinates>>(
-                (FovStars value) {
-                  return DropdownMenuEntry<Coordinates>(
-                    value: value.coords,
-                    label: value.star,
-                    style: MenuItemButton.styleFrom(
-                      foregroundColor: red,
-                    ),
-                  );
-                },
-              ).toList(),
             ),
             TextForm(
               scrollPadding: EdgeInsets.all(-150.0),
@@ -695,27 +709,46 @@ class MyCustomFormState extends State<MyCustomForm> {
             children: [
               Visibility(
                 visible: editShowers,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: lightGrey, // Background color
-                    foregroundColor: red, // Text Color (Foreground color)
-                  ),
-                  onPressed: _showMultiSelect,
-                  child: const Text('Meteor Showers'),
+                child: Text(
+                  style: TextStyle(
+                      //backgroundColor: lightGrey, // Background color
+                      color: red,
+                      fontSize: 15),
+                  'Meteor showers to observe:',
                 ),
               ),
-              Wrap(
-                direction: Axis.horizontal,
-                spacing: 4,
-                children: _selectedShowers
-                    .map((e) => Chip(
-                          backgroundColor: lightGrey,
-                          label: Text(
-                            e,
-                            style: const TextStyle(color: red),
-                          ),
-                        ))
-                    .toList(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 5,
+                children: [
+                  Wrap(
+                    direction: Axis.horizontal,
+                    spacing: 4,
+                    children: _selectedShowers
+                        .map((e) => Chip(
+                            backgroundColor: lightGrey,
+                            label: Text(
+                              e,
+                              style: const TextStyle(color: red),
+                            ),
+                            shape: StadiumBorder(
+                                side: BorderSide(color: lightGrey))))
+                        .toList(),
+                  ),
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: IconButton(
+                      padding: EdgeInsets.all(0.0),
+                      onPressed: _showMultiSelect,
+                      icon: Icon(Icons.add),
+                      style: IconButton.styleFrom(
+                        backgroundColor: lightGrey, // Background color
+                        foregroundColor: red, // Text Color (Foreground color)
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -762,9 +795,9 @@ class MyCustomFormState extends State<MyCustomForm> {
                   child: Table(
                     border: TableBorder.all(color: red, width: 1.5),
                     columnWidths: const <int, TableColumnWidth>{
-                      0: FlexColumnWidth(1),
+                      0: FlexColumnWidth(0.9),
                       1: FlexColumnWidth(1.5),
-                      2: FlexColumnWidth(2.5),
+                      2: FlexColumnWidth(1.9),
                       3: FlexColumnWidth(1.2),
                       4: FlexColumnWidth(1),
                       5: FlexColumnWidth(1),
@@ -869,6 +902,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                             table2 = true;
                             edit = false;
                           });
+
+                          WakelockPlus.enable();
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -985,6 +1020,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                             writeCounter(observer.name!, 2);
                           }
 
+                          WakelockPlus.disable();
+
                           firstWrite = false;
                           session = {};
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -992,11 +1029,6 @@ class MyCustomFormState extends State<MyCustomForm> {
                             content: const Text(
                               'Session ended! CSV files saved to Download/MeteorLog.',
                               style: redNormal,
-                            ),
-                            action: SnackBarAction(
-                              label: 'PUBLISH',
-                              textColor: red,
-                              onPressed: _launchUrl,
                             ),
                             backgroundColor: lightGrey,
                           ));

@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class Cell extends StatelessWidget {
   final String title;
@@ -12,6 +14,31 @@ class Cell extends StatelessWidget {
               color: Color(0xFFB71C1C),
               fontSize: 16,
               fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+class LinkCell extends StatelessWidget {
+  final String title;
+  final String url;
+  LinkCell(this.title, this.url);
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: RichText(
+        text: TextSpan(
+            text: title,
+            style: TextStyle(
+                color: Color(0xFFB71C1C),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                launchUrlString(url);
+              }),
+      ),
     );
   }
 }
