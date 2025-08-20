@@ -545,7 +545,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   onEditingComplete: onEditingComplete,
                   decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: red, width: 1.0),
+                      borderSide: BorderSide(color: red, width: 2.0),
                       borderRadius: BorderRadius.circular(0),
                     ),
                     enabledBorder: OutlineInputBorder(
@@ -553,8 +553,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                       borderRadius: BorderRadius.circular(0),
                     ),
                     border: OutlineInputBorder(),
-                    hintText: 'Search stars...',
-                    hintStyle: Theme.of(context).textTheme.bodyMedium,
+                    //hintText: 'Search stars...',
+                    //hintStyle: Theme.of(context).textTheme.bodyMedium,
                     //prefixIcon: Icon(Icons.search),
                   ),
                   style: Theme.of(context).textTheme.bodyMedium,
