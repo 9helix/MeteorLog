@@ -3,7 +3,9 @@
 Android app for generating CSV files from visual observations of meteors for submitting to the [IMO website](https://www.imo.net/). Written in Flutter.
 
 ## Usage
+
 <a href="https://drive.google.com/file/d/1tCUS53mDc-NVCr0zJO3a8I36iCjgDt8R/view?usp=sharing">![Demo](https://img.shields.io/badge/Demo-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)</a>
+
 1. Enter number of the number of the observers, and a desired duration period (you will get notified at the end of each period to start the new session).
 2. Select meteor showers you would like to observe, sporadics are included by default.
 3. Fill in the table with each observer's viewing specifics (name, star at center of the FOV, estimated view obstruction percentage, a [field number](https://www.imo.net/observations/methods/visual-observation/major/observation/#table1) and its number of stars).
