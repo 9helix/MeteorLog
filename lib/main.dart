@@ -402,7 +402,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     List<TableRow> tableRows = [
       TableRow(
         children: <Widget>[
-          Cell("Obs. num"),
+          Cell("ID"),
           Cell("Obs. name"),
           Cell("Center star"),
           Cell("Obstr. %"),
@@ -707,15 +707,12 @@ class MyCustomFormState extends State<MyCustomForm> {
           const SizedBox(height: 20),
           Column(
             children: [
-              Visibility(
-                visible: editShowers,
-                child: Text(
-                  style: TextStyle(
-                      //backgroundColor: lightGrey, // Background color
-                      color: red,
-                      fontSize: 15),
-                  'Meteor showers to observe:',
-                ),
+              Text(
+                style: TextStyle(
+                    //backgroundColor: lightGrey, // Background color
+                    color: red,
+                    fontSize: 15),
+                'Meteor showers to observe:',
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -794,12 +791,12 @@ class MyCustomFormState extends State<MyCustomForm> {
                   child: Table(
                     border: TableBorder.all(color: red, width: 1.5),
                     columnWidths: const <int, TableColumnWidth>{
-                      0: FlexColumnWidth(0.9),
+                      0: FlexColumnWidth(0.7),
                       1: FlexColumnWidth(1.5),
-                      2: FlexColumnWidth(1.9),
+                      2: FlexColumnWidth(1.7),
                       3: FlexColumnWidth(1.2),
                       4: FlexColumnWidth(1),
-                      5: FlexColumnWidth(1.2),
+                      5: FlexColumnWidth(1.3),
                     },
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: tableRows,
