@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:meteor_log/colors.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class Cell extends StatelessWidget {
@@ -10,10 +11,8 @@ class Cell extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Text(title,
-          style: TextStyle(
-              color: Color(0xFFB71C1C),
-              fontSize: 16,
-              fontWeight: FontWeight.bold)),
+          style:
+              TextStyle(color: red, fontSize: 16, fontWeight: FontWeight.bold)),
     );
   }
 }
@@ -30,7 +29,7 @@ class LinkCell extends StatelessWidget {
         text: TextSpan(
             text: title,
             style: TextStyle(
-                color: Color(0xFFB71C1C),
+                color: red,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 decoration: TextDecoration.underline),
@@ -53,9 +52,7 @@ class CenteredCell extends StatelessWidget {
       child: Center(
         child: Text(title,
             style: TextStyle(
-                color: Color(0xFFB71C1C),
-                fontSize: 16,
-                fontWeight: FontWeight.bold)),
+                color: red, fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }

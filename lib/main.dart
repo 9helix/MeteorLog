@@ -27,7 +27,12 @@ class MyApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     return MaterialApp(
         theme: ThemeData(
-          splashColor: Color(0xff151515),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+            backgroundColor: midGrey, // Background color
+            foregroundColor: red, // Text Color (Foreground color)
+          )),
+          splashColor: lightGrey,
           highlightColor: darkGrey,
           canvasColor: lightGrey,
           // Define the default brightness and colors.
@@ -140,10 +145,6 @@ class _MultiSelectState extends State<MultiSelect> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: midGrey, // Background color
-            foregroundColor: red, // Text Color (Foreground color)
-          ),
           onPressed: _submit,
           child: const Text('Submit'),
         ),
@@ -364,7 +365,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     if (states.any(interactiveStates.contains)) {
       return lightGrey;
     }
-    return Color(0xff1f1f1f);
+    return lightGrey;
   }
 
   List<String> showerList = [];
@@ -396,8 +397,7 @@ class MyCustomFormState extends State<MyCustomForm> {
       getShowers();
     }
 
-    List<FovStars> sortedFovStars = List.from(FovStars.values);
-    sortedFovStars.sort((a, b) => a.star.compareTo(b.star));
+    final fovStarsDict = FovStars.toMap();
 
     List<TableRow> tableRows = [
       TableRow(
@@ -408,7 +408,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           Cell("Obstr. %"),
           LinkCell("Field num",
               "https://www.imo.net/observations/methods/visual-observation/major/observation/"),
-          Cell("Star num"),
+          Cell("Num of stars"),
         ],
       ),
     ];
@@ -530,7 +530,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 if (textEditingValue.text == '') {
                   return const Iterable<String>.empty();
                 }
-                return FovStars.toMap().keys.where((String option) {
+                return fovStarsDict.keys.where((String option) {
                   return option
                       .toLowerCase()
                       .contains(textEditingValue.text.toLowerCase());
@@ -594,7 +594,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                       fovCoords.add(null);
                     }
                   }
-                  fovCoords[i] = FovStars.toMap()[selection];
+                  fovCoords[i] = fovStarsDict[selection];
                 });
               },
             ),
@@ -726,7 +726,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                     spacing: 4,
                     children: _selectedShowers
                         .map((e) => Chip(
-                            backgroundColor: lightGrey,
+                            backgroundColor: midGrey,
                             label: Text(
                               e,
                               style: const TextStyle(color: red),
@@ -735,16 +735,19 @@ class MyCustomFormState extends State<MyCustomForm> {
                                 side: BorderSide(color: lightGrey))))
                         .toList(),
                   ),
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: IconButton(
-                      padding: EdgeInsets.all(0.0),
-                      onPressed: _showMultiSelect,
-                      icon: Icon(Icons.add),
-                      style: IconButton.styleFrom(
-                        backgroundColor: lightGrey, // Background color
-                        foregroundColor: red, // Text Color (Foreground color)
+                  Visibility(
+                    visible: editShowers,
+                    child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: IconButton(
+                        padding: EdgeInsets.all(0.0),
+                        onPressed: _showMultiSelect,
+                        icon: Icon(Icons.add),
+                        style: IconButton.styleFrom(
+                          backgroundColor: lightGrey, // Background color
+                          foregroundColor: red, // Text Color (Foreground color)
+                        ),
                       ),
                     ),
                   ),
@@ -755,10 +758,6 @@ class MyCustomFormState extends State<MyCustomForm> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: lightGrey, // Background color
-                  foregroundColor: red, // Text Color (Foreground color)
-                ),
                 onPressed: () {
                   if (_selectedShowers.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -800,7 +799,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                       2: FlexColumnWidth(1.9),
                       3: FlexColumnWidth(1.2),
                       4: FlexColumnWidth(1),
-                      5: FlexColumnWidth(1),
+                      5: FlexColumnWidth(1.2),
                     },
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                     children: tableRows,
@@ -814,10 +813,6 @@ class MyCustomFormState extends State<MyCustomForm> {
               Visibility(
                 visible: table1,
                 child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: lightGrey, // Background color
-                      foregroundColor: red, // Text Color (Foreground color)
-                    ),
                     onPressed: () {
                       // Validate returns true if the form is valid, or false otherwise.
                       if (fovCoords.any((element) => element == null) ||
@@ -1070,10 +1065,6 @@ class MyCustomFormState extends State<MyCustomForm> {
           Visibility(
             visible: table2,
             child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: lightGrey,
-                  foregroundColor: red,
-                ),
                 onPressed: () {
                   // Validate returns true if the form is valid, or false otherwise.
 
