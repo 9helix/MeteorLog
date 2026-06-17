@@ -1,5 +1,7 @@
 # <img src="https://cdn-icons-png.flaticon.com/512/1734/1734190.png" alt="meteors" width="25"> MeteorLog
 ![GitHub Downloads](https://img.shields.io/github/downloads/9helix/MeteorLog/total?label=App%20Downloads&color=blue)
+[![Featured on IMO](https://img.shields.io/badge/Featured%20on-IMO-orange)](https://www.imo.net/resources/meteorlog-android-app/)
+
 
 Android app for generating CSV files from visual observations of meteors for submitting to the [IMO website](https://www.imo.net/). Written in Flutter.
 
